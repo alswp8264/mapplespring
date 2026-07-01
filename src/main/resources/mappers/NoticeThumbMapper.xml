@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mapple.dao.NoticeThumbDao">
+
+    <select id="findThumbnail" resultType="string">
+        SELECT thumbnail FROM notice_thumb_tb
+        WHERE notice_id = #{noticeId} AND notice_type = #{noticeType}
+    </select>
+
+    <insert id="insert" parameterType="NoticeThumbDto">
+        INSERT INTO notice_thumb_tb (notice_id, notice_type, thumbnail)
+        VALUES (#{noticeId}, #{noticeType}, #{thumbnail})
+    </insert>
+
+</mapper>

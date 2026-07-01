@@ -1,0 +1,18 @@
+# ===== Oracle DB 설정 =====
+db.url=jdbc:oracle:thin:@localhost:1521:xe
+db.username=hr
+db.password=hr
+
+# ===== Google OAuth2 =====
+google.client.id=YOUR_GOOGLE_CLIENT_ID
+google.client.secret=YOUR_GOOGLE_CLIENT_SECRET
+google.redirect.uri=http://localhost:8088/Mapple_Spring/member/oauth/google/callback
+
+# ===== Kakao OAuth2 =====
+kakao.client.id=YOUR_KAKAO_CLIENT_ID
+kakao.client.secret=YOUR_KAKAO_CLIENT_SECRET
+kakao.redirect.uri=http://localhost:8088/Mapple_Spring/member/oauth/kakao/callback
+
+# ===== 넥슨 OPEN API =====
+nexon.api.key=YOUR_NEXON_API_KEY
+nexon.api.base-url=https://open.api.nexon.com

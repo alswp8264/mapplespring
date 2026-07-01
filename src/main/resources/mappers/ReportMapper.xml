@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mapple.dao.ReportDao">
+
+    <resultMap id="reportMap" type="ReportDto">
+        <id     property="reportId"     column="report_id"/>
+        <result property="boardId"      column="board_id"/>
+        <result property="reporterId"   column="reporter_id"/>
+        <result property="reason"       column="reason"/>
+        <result property="status"       column="status"/>
+        <result property="regDate"      column="reg_date"/>
+        <result property="boardTitle"   column="board_title"/>
+        <result property="authorId"     column="author_id"/>
+        <result property="authorName"   column="author_name"/>
+        <result property="reporterName" column="reporter_name"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="ReportDto">
+        INSERT INTO report_tb (report_id, board_id, reporter_id, reason)
+        VALUES (report_seq.NEXTVAL, #{boardId}, #{reporterId}, #{reason})
+    </insert>
+
+    <select id="findPending" resultMap="reportMap">
+        SELECT r.report_id, r.board_id, r.reporter_id, r.reason, r.status, r.reg_date,
+               b.title AS board_title, b.member_id AS author_id,
+               am.name AS author_name, rm.name AS reporter_name
+        FROM report_tb r
+        JOIN board_tb b   ON r.board_id = b.board_id
+        JOIN member_tb am ON b.member_id = am.member_id
+        JOIN member_tb rm ON r.reporter_id = rm.member_id
+        WHERE r.status = 'PENDING'
+        ORDER BY r.report_id DESC
+    </select>
+
+    <select id="findById" parameterType="int" resultMap="reportMap">
+        SELECT r.report_id, r.board_id, r.reporter_id, r.reason, r.status, r.reg_date,
+               b.title AS board_title, b.member_id AS author_id
+        FROM report_tb r
+        JOIN board_tb b ON r.board_id = b.board_id
+        WHERE r.report_id = #{reportId}
+    </select>
+
+    <update id="updateStatus">
+        UPDATE report_tb SET status = #{status} WHERE report_id = #{reportId}
+    </update>
+
+    <select id="countDup" resultType="int">
+        SELECT COUNT(*) FROM report_tb
+        WHERE board_id = #{boardId} AND reporter_id = #{reporterId} AND status = 'PENDING'
+    </select>
+
+    <select id="countPending" resultType="int">
+        SELECT COUNT(*) FROM report_tb WHERE status = 'PENDING'
+    </select>
+
+</mapper>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mapple.dao.MemberDao">
+
+    <resultMap id="memberMap" type="MemberDto">
+        <id     property="memberId"     column="member_id"/>
+        <result property="loginId"      column="login_id"/>
+        <result property="password"     column="password"/>
+        <result property="name"         column="name"/>
+        <result property="email"        column="email"/>
+        <result property="role"         column="role"/>
+        <result property="regDate"      column="reg_date"/>
+        <result property="faceEncoding" column="face_encoding"/>
+        <result property="socialType"   column="social_type"/>
+        <result property="socialId"     column="social_id"/>
+        <result property="banUntil"     column="ban_until"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="MemberDto">
+        INSERT INTO member_tb (member_id, login_id, password, name, email, role)
+        VALUES (member_seq.NEXTVAL, #{loginId}, #{password}, #{name}, #{email}, 'USER')
+    </insert>
+
+    <select id="findByLoginId" parameterType="String" resultMap="memberMap">
+        SELECT * FROM member_tb WHERE login_id = #{loginId}
+    </select>
+
+    <select id="findById" parameterType="int" resultMap="memberMap">
+        SELECT * FROM member_tb WHERE member_id = #{memberId}
+    </select>
+
+    <update id="update" parameterType="MemberDto">
+        UPDATE member_tb
+        SET name = #{name}, email = #{email}
+        WHERE member_id = #{memberId}
+    </update>
+
+    <update id="updatePassword" parameterType="MemberDto">
+        UPDATE member_tb
+        SET password = #{password}
+        WHERE member_id = #{memberId}
+    </update>
+
+    <delete id="delete" parameterType="int">
+        DELETE FROM member_tb WHERE member_id = #{memberId}
+    </delete>
+
+    <select id="countByLoginId" parameterType="String" resultType="int">
+        SELECT COUNT(*) FROM member_tb WHERE login_id = #{loginId}
+    </select>
+
+    <select id="findAll" resultMap="memberMap">
+        SELECT * FROM member_tb ORDER BY member_id
+    </select>
+
+    <update id="updateFaceEncoding" parameterType="MemberDto">
+        UPDATE member_tb SET face_encoding = #{faceEncoding} WHERE member_id = #{memberId}
+    </update>
+
+    <update id="deleteFaceEncoding" parameterType="int">
+        UPDATE member_tb SET face_encoding = NULL WHERE member_id = #{memberId}
+    </update>
+
+    <select id="findAllWithFace" resultMap="memberMap">
+        SELECT member_id, face_encoding FROM member_tb WHERE face_encoding IS NOT NULL
+    </select>
+
+    <select id="findBySocialId" resultMap="memberMap">
+        SELECT * FROM member_tb
+        WHERE social_type = #{socialType} AND social_id = #{socialId}
+    </select>
+
+    <insert id="insertSocial" parameterType="MemberDto">
+        INSERT INTO member_tb (member_id, login_id, password, name, email, role, social_type, social_id)
+        VALUES (member_seq.NEXTVAL, #{loginId}, 'SOCIAL_OAUTH', #{name}, #{email}, 'USER', #{socialType}, #{socialId})
+    </insert>
+
+    <!-- 아이디 찾기 (일반 회원만: social_type IS NULL) -->
+    <select id="findLoginIdByNameEmail" resultType="String">
+        SELECT login_id FROM member_tb
+        WHERE name = #{name} AND email = #{email} AND social_type IS NULL
+        FETCH FIRST 1 ROWS ONLY
+    </select>
+
+    <!-- 비밀번호 찾기 본인확인 (일반 회원만) -->
+    <select id="findForPwReset" resultMap="memberMap">
+        SELECT * FROM member_tb
+        WHERE login_id = #{loginId} AND name = #{name} AND email = #{email}
+          AND social_type IS NULL
+    </select>
+
+    <!-- 회원 밴(글쓰기 제한) 만료시각 설정 -->
+    <update id="updateBanUntil">
+        UPDATE member_tb SET ban_until = #{banUntil} WHERE member_id = #{memberId}
+    </update>
+
+    <!-- 벤 해제 -->
+    <update id="unban">
+        UPDATE member_tb SET ban_until = NULL WHERE member_id = #{memberId}
+    </update>
+
+    <!-- 관리자 회원 검색 (아이디/이름 LIKE + 권한 필터) -->
+    <select id="searchMembers" resultMap="memberMap">
+        SELECT * FROM member_tb
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (LOWER(login_id) LIKE '%' || LOWER(#{keyword}) || '%'
+                     OR LOWER(name) LIKE '%' || LOWER(#{keyword}) || '%')
+            </if>
+            <if test="role != null and role != ''">
+                AND role = #{role}
+            </if>
+        </where>
+        ORDER BY member_id
+    </select>
+
+</mapper>

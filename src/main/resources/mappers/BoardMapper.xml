@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mapple.dao.BoardDao">
+
+    <resultMap id="boardMap" type="BoardDto">
+        <id     property="boardId"    column="board_id"/>
+        <result property="memberId"   column="member_id"/>
+        <result property="title"      column="title"/>
+        <result property="content"    column="content"/>
+        <result property="viewCnt"    column="view_cnt"/>
+        <result property="regDate"    column="reg_date"/>
+        <result property="modDate"    column="mod_date"/>
+        <result property="category"   column="category"/>
+        <result property="writerName" column="name"/>
+        <result property="loginId"    column="login_id"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="BoardDto">
+        <selectKey keyProperty="boardId" resultType="int" order="BEFORE">
+            SELECT board_seq.NEXTVAL FROM dual
+        </selectKey>
+        INSERT INTO board_tb (board_id, member_id, title, content, category)
+        VALUES (#{boardId}, #{memberId}, #{title}, #{content}, #{category})
+    </insert>
+
+    <select id="findAll" parameterType="map" resultMap="boardMap">
+        SELECT b.*, m.name, m.login_id
+        FROM board_tb b
+        JOIN member_tb m ON b.member_id = m.member_id
+        <where>
+            <if test="category != null and category != ''">
+                b.category = #{category}
+            </if>
+        </where>
+        ORDER BY b.board_id DESC
+        OFFSET #{offset} ROWS FETCH NEXT #{pageSize} ROWS ONLY
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM board_tb
+        <where>
+            <if test="category != null and category != ''">
+                category = #{category}
+            </if>
+        </where>
+    </select>
+
+    <select id="findById" parameterType="int" resultMap="boardMap">
+        SELECT b.*, m.name, m.login_id
+        FROM board_tb b
+        JOIN member_tb m ON b.member_id = m.member_id
+        WHERE b.board_id = #{boardId}
+    </select>
+
+    <update id="updateViewCnt" parameterType="int">
+        UPDATE board_tb SET view_cnt = view_cnt + 1 WHERE board_id = #{boardId}
+    </update>
+
+    <update id="update" parameterType="BoardDto">
+        UPDATE board_tb
+        SET title = #{title}, content = #{content}, category = #{category}, mod_date = SYSDATE
+        WHERE board_id = #{boardId}
+    </update>
+
+    <delete id="delete" parameterType="int">
+        DELETE FROM board_tb WHERE board_id = #{boardId}
+    </delete>
+
+</mapper>

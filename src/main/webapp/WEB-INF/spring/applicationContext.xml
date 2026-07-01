@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+       xsi:schemaLocation="
+           http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/tx
+           http://www.springframework.org/schema/tx/spring-tx.xsd
+           http://www.springframework.org/schema/data/jpa
+           https://www.springframework.org/schema/data/jpa/spring-jpa.xsd">
+
+    <!-- Service, DAO 패키지 스캔 -->
+    <context:component-scan base-package="com.mapple.service, com.mapple.dao, com.mapple.util" />
+
+    <!-- properties 파일 로드 (API 키 등) -->
+    <context:property-placeholder location="classpath:application.properties" />
+
+    <!-- ===== DataSource (Oracle) ===== -->
+    <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="oracle.jdbc.OracleDriver" />
+        <property name="url"      value="${db.url}" />
+        <property name="username" value="${db.username}" />
+        <property name="password" value="${db.password}" />
+        <property name="initialSize" value="3" />
+        <property name="maxTotal"    value="10" />
+    </bean>
+
+    <!-- ===== MyBatis SqlSessionFactory ===== -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="mapperLocations" value="classpath:mappers/*.xml" />
+        <property name="typeAliasesPackage" value="com.mapple.dto" />
+    </bean>
+
+    <!-- ===== MyBatis Mapper 자동 스캔 ===== -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.mapple.dao" />
+    </bean>
+
+    <!-- ===== Spring Data JPA — EntityManagerFactory (Hibernate 6) ===== -->
+    <bean id="entityManagerFactory"
+          class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="packagesToScan" value="com.mapple.entity" />
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+                <property name="database" value="ORACLE" />
+                <property name="showSql"    value="false" />
+                <property name="generateDdl" value="true" />
+            </bean>
+        </property>
+        <property name="jpaProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.OracleDialect</prop>
+                <!-- update: 테이블/시퀀스 없으면 자동 생성, 있으면 유지 -->
+                <prop key="hibernate.hbm2ddl.auto">update</prop>
+                <prop key="hibernate.format_sql">false</prop>
+                <prop key="hibernate.id.db_structure_naming_strategy">
+                    org.hibernate.id.enhanced.LegacyNamingStrategy
+                </prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- JPA Repository 자동 등록 (com.mapple.repository 패키지) -->
+    <jpa:repositories base-package="com.mapple.repository"
+                      entity-manager-factory-ref="entityManagerFactory"
+                      transaction-manager-ref="transactionManager" />
+
+    <!-- ===== 트랜잭션 관리 — JpaTransactionManager 로 교체 (MyBatis도 같이 커버) ===== -->
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory" />
+    </bean>
+    <tx:annotation-driven transaction-manager="transactionManager" />
+
+</beans>

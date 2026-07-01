@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mapple.dao.InquiryDao">
+
+    <resultMap id="inquiryMap" type="com.mapple.dto.InquiryDto">
+        <id     property="inquiryId"   column="inquiry_id"/>
+        <result property="memberId"    column="member_id"/>
+        <result property="loginId"     column="login_id"/>
+        <result property="memberName"  column="name"/>
+        <result property="title"       column="title"/>
+        <result property="content"     column="content"/>
+        <result property="answer"      column="answer"/>
+        <result property="status"      column="status"/>
+        <result property="createdAt"   column="created_at"/>
+        <result property="answeredAt"  column="answered_at"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.mapple.dto.InquiryDto">
+        INSERT INTO inquiry_tb (inquiry_id, member_id, title, content, status)
+        VALUES (inquiry_seq.NEXTVAL, #{memberId}, #{title}, #{content}, '대기중')
+    </insert>
+
+    <select id="findByMemberId" resultMap="inquiryMap">
+        SELECT i.*, m.login_id, m.name
+        FROM inquiry_tb i JOIN member_tb m ON i.member_id = m.member_id
+        WHERE i.member_id = #{memberId}
+        ORDER BY i.created_at DESC
+    </select>
+
+    <select id="findAll" resultMap="inquiryMap">
+        SELECT i.*, m.login_id, m.name
+        FROM inquiry_tb i JOIN member_tb m ON i.member_id = m.member_id
+        ORDER BY i.created_at DESC
+    </select>
+
+    <select id="findById" resultMap="inquiryMap">
+        SELECT i.*, m.login_id, m.name
+        FROM inquiry_tb i JOIN member_tb m ON i.member_id = m.member_id
+        WHERE i.inquiry_id = #{inquiryId}
+    </select>
+
+    <update id="answer" parameterType="com.mapple.dto.InquiryDto">
+        UPDATE inquiry_tb
+        SET answer = #{answer}, status = '답변완료', answered_at = SYSDATE
+        WHERE inquiry_id = #{inquiryId}
+    </update>
+
+</mapper>

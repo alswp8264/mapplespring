@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mapple.dao.LookbookDao">
+
+    <resultMap id="lookbookMap" type="LookbookDto">
+        <id     property="lookbookId" column="lookbook_id"/>
+        <result property="memberId"   column="member_id"/>
+        <result property="charName"   column="char_name"/>
+        <result property="charImage"  column="char_image"/>
+        <result property="charClass"  column="char_class"/>
+        <result property="charWorld"  column="char_world"/>
+        <result property="charLevel"  column="char_level"/>
+        <result property="title"      column="title"/>
+        <result property="writerName" column="writer_name"/>
+        <result property="regDate"    column="reg_date"/>
+        <result property="likeCount"  column="like_count"/>
+        <result property="likedByMe"  column="liked_by_me"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="LookbookDto">
+        INSERT INTO lookbook_tb
+            (lookbook_id, member_id, char_name, char_image, char_class, char_world, char_level, title)
+        VALUES
+            (lookbook_seq.NEXTVAL, #{memberId}, #{charName}, #{charImage}, #{charClass}, #{charWorld}, #{charLevel}, #{title})
+    </insert>
+
+    <select id="findAll" resultMap="lookbookMap">
+        SELECT l.lookbook_id, l.member_id, l.char_name, l.char_image,
+               l.char_class, l.char_world, l.char_level, l.title, l.reg_date,
+               l.like_count, 0 AS liked_by_me,
+               m.name AS writer_name
+        FROM lookbook_tb l
+        JOIN member_tb m ON l.member_id = m.member_id
+        ORDER BY l.like_count DESC, l.reg_date DESC
+    </select>
+
+    <select id="findAllWithLike" parameterType="int" resultMap="lookbookMap">
+        SELECT l.lookbook_id, l.member_id, l.char_name, l.char_image,
+               l.char_class, l.char_world, l.char_level, l.title, l.reg_date,
+               l.like_count,
+               CASE WHEN #{memberId} > 0 AND EXISTS (
+                   SELECT 1 FROM lookbook_like_tb ll
+                   WHERE ll.lookbook_id = l.lookbook_id AND ll.member_id = #{memberId}
+               ) THEN 1 ELSE 0 END AS liked_by_me,
+               m.name AS writer_name
+        FROM lookbook_tb l
+        JOIN member_tb m ON l.member_id = m.member_id
+        ORDER BY l.like_count DESC, l.reg_date DESC
+    </select>
+
+    <select id="findByMemberId" parameterType="int" resultMap="lookbookMap">
+        SELECT lookbook_id, member_id, char_name, char_image,
+               char_class, char_world, char_level, title, reg_date
+        FROM lookbook_tb
+        WHERE member_id = #{memberId}
+        ORDER BY reg_date DESC
+    </select>
+
+    <delete id="deleteByMember" parameterType="LookbookDto">
+        DELETE FROM lookbook_tb
+        WHERE lookbook_id = #{lookbookId} AND member_id = #{memberId}
+    </delete>
+
+    <delete id="deleteById" parameterType="int">
+        DELETE FROM lookbook_tb WHERE lookbook_id = #{lookbookId}
+    </delete>
+
+    <select id="getClassStats" resultType="map">
+        SELECT char_class AS "charClass", COUNT(*) AS "cnt"
+        FROM lookbook_tb
+        GROUP BY char_class
+        ORDER BY COUNT(*) DESC
+    </select>
+
+    <select id="getWorldStats" resultType="map">
+        SELECT char_world AS "charWorld", COUNT(*) AS "cnt"
+        FROM lookbook_tb
+        GROUP BY char_world
+        ORDER BY COUNT(*) DESC
+    </select>
+
+    <select id="getTotalCount" resultType="int">
+        SELECT COUNT(*) FROM lookbook_tb
+    </select>
+
+    <!-- 좋아요 -->
+    <insert id="insertLike" parameterType="map">
+        INSERT INTO lookbook_like_tb (lookbook_id, member_id)
+        VALUES (#{lookbookId}, #{memberId})
+    </insert>
+
+    <delete id="deleteLike" parameterType="map">
+        DELETE FROM lookbook_like_tb
+        WHERE lookbook_id = #{lookbookId} AND member_id = #{memberId}
+    </delete>
+
+    <select id="isLiked" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM lookbook_like_tb
+        WHERE lookbook_id = #{lookbookId} AND member_id = #{memberId}
+    </select>
+
+    <select id="getLikeCount" parameterType="int" resultType="int">
+        SELECT COUNT(*) FROM lookbook_like_tb WHERE lookbook_id = #{lookbookId}
+    </select>
+
+    <!-- 좋아요 수 동기화 (toggleLike 후 호출) -->
+    <update id="syncLikeCount" parameterType="int">
+        UPDATE lookbook_tb
+        SET like_count = (SELECT COUNT(*) FROM lookbook_like_tb WHERE lookbook_id = #{lookbookId})
+        WHERE lookbook_id = #{lookbookId}
+    </update>
+
+</mapper>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="160" viewBox="0 0 400 160">
+  <rect width="400" height="160" fill="#f3eeff"/>
+  <rect x="0" y="0" width="400" height="4" fill="#8b5cf6"/>
+  <text x="200" y="70" font-family="Arial,sans-serif" font-size="28" fill="#8b5cf6" text-anchor="middle">💎</text>
+  <text x="200" y="105" font-family="Arial,sans-serif" font-size="15" font-weight="bold" fill="#6d28d9" text-anchor="middle">캐시샵</text>
+  <text x="200" y="125" font-family="Arial,sans-serif" font-size="12" fill="#aaa" text-anchor="middle">MapleStory Cash Shop</text>
+</svg>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mapple.dao.AnnouncementDao">
+
+    <resultMap id="annMap" type="AnnouncementDto">
+        <id     property="announcementId" column="announcement_id"/>
+        <result property="memberId"       column="member_id"/>
+        <result property="writerName"     column="writer_name"/>
+        <result property="title"          column="title"/>
+        <result property="content"        column="content"/>
+        <result property="viewCnt"        column="view_cnt"/>
+        <result property="regDate"        column="reg_date"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="annMap">
+        SELECT a.*, m.name AS writer_name
+        FROM announcement_tb a
+        LEFT JOIN member_tb m ON a.member_id = m.member_id
+        ORDER BY a.announcement_id DESC
+    </select>
+
+    <select id="findRecent" parameterType="int" resultMap="annMap">
+        SELECT a.*, m.name AS writer_name
+        FROM announcement_tb a
+        LEFT JOIN member_tb m ON a.member_id = m.member_id
+        ORDER BY a.announcement_id DESC
+        FETCH FIRST #{limit} ROWS ONLY
+    </select>
+
+    <select id="findById" parameterType="int" resultMap="annMap">
+        SELECT a.*, m.name AS writer_name
+        FROM announcement_tb a
+        LEFT JOIN member_tb m ON a.member_id = m.member_id
+        WHERE a.announcement_id = #{announcementId}
+    </select>
+
+    <insert id="insert" parameterType="AnnouncementDto">
+        INSERT INTO announcement_tb (announcement_id, member_id, title, content)
+        VALUES (announcement_seq.NEXTVAL, #{memberId}, #{title}, #{content})
+    </insert>
+
+    <update id="update" parameterType="AnnouncementDto">
+        UPDATE announcement_tb
+        SET title = #{title}, content = #{content}
+        WHERE announcement_id = #{announcementId}
+    </update>
+
+    <delete id="delete" parameterType="int">
+        DELETE FROM announcement_tb WHERE announcement_id = #{announcementId}
+    </delete>
+
+    <update id="increaseView" parameterType="int">
+        UPDATE announcement_tb SET view_cnt = view_cnt + 1 WHERE announcement_id = #{announcementId}
+    </update>
+
+</mapper>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mapple.dao.BoardFileDao">
+
+    <resultMap id="fileMap" type="BoardFileDto">
+        <id     property="fileId"   column="file_id"/>
+        <result property="boardId"  column="board_id"/>
+        <result property="fileName" column="file_name"/>
+        <result property="origName" column="orig_name"/>
+        <result property="fileType" column="file_type"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="BoardFileDto">
+        INSERT INTO board_file_tb (file_id, board_id, file_name, orig_name, file_type)
+        VALUES (board_file_seq.NEXTVAL, #{boardId}, #{fileName}, #{origName}, #{fileType})
+    </insert>
+
+    <select id="findByBoardId" parameterType="int" resultMap="fileMap">
+        SELECT * FROM board_file_tb WHERE board_id = #{boardId} ORDER BY file_id
+    </select>
+
+</mapper>

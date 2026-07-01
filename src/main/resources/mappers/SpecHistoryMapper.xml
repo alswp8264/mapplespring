@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mapple.dao.SpecHistoryDao">
+
+    <resultMap id="specMap" type="SpecHistoryDto">
+        <id     property="historyId"   column="history_id"/>
+        <result property="memberId"    column="member_id"/>
+        <result property="charName"    column="char_name"/>
+        <result property="attackPower" column="attack_power"/>
+        <result property="bossDmg"     column="boss_dmg"/>
+        <result property="ignDef"      column="ign_def"/>
+        <result property="finalDmg"    column="final_dmg"/>
+        <result property="saveDate"    column="save_date"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="SpecHistoryDto">
+        INSERT INTO spec_history_tb (history_id, member_id, char_name, attack_power, boss_dmg, ign_def, final_dmg)
+        VALUES (spec_history_seq.NEXTVAL, #{memberId}, #{charName}, #{attackPower}, #{bossDmg}, #{ignDef}, #{finalDmg})
+    </insert>
+
+    <select id="findByMemberAndChar" parameterType="SpecHistoryDto" resultMap="specMap">
+        SELECT * FROM spec_history_tb
+        WHERE member_id = #{memberId} AND char_name = #{charName}
+        ORDER BY save_date DESC
+    </select>
+
+</mapper>

@@ -1,0 +1,29 @@
+# Maven 빌드 결과물
+target/
+
+# Eclipse 워크스페이스 메타데이터
+.metadata/
+.settings/
+.classpath
+.project
+
+# Claude Code 세션 파일
+.claude/
+
+# 민감한 설정 파일 (API 키 포함)
+src/main/resources/application.properties
+
+# Streamlit 캐시
+DGameReview.streamlit/
+
+# Python 캐시
+face_server/__pycache__/
+*.pyc
+*.pyo
+
+# 로그
+*.log
+
+# IDE
+.idea/
+*.iml
