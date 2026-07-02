@@ -10,8 +10,6 @@ target/
 # Claude Code 세션 파일
 .claude/
 
-# 민감한 설정 파일 (API 키 포함)
-src/main/resources/application.properties
 
 # Streamlit 캐시
 DGameReview.streamlit/
